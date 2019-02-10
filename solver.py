@@ -61,63 +61,85 @@ class node:
 		goal = [[0, 1, 2],[3, 4, 5],[6, 7, 8]]
 		return self.state == goal
 
-def manhattanDistance(s_1, s_2):
-
-	return
+def manhattanDistance(curr_state):
+	total = 0
+	for i in range(len(curr_state)):
+		for j in range(len(curr_state[i])):
+			if curr_state[i][j] is not 0:
+				total += abs(i - round((curr_state[i][j]-1)/3)) + abs(j - curr_state[i][j]%3)
+	return total
 
 def gbf(start_node):
-	frontier = Queue()
-	explored = Queue()
-	frontier.put(start_node)
-	frontier_count = 0 
-	expanded_count = 0
-
-	while(not frontier.empty()):
-		node = frontier.get()
-		if node.is_goal():
-			return node, node.path_cost, frontier_count, expanded_count
-		explored.put(node)
-		node.generate_child_nodes()
-		expanded_count += 1
-		for n in node.children:
-			if n not in frontier.queue and n not in explored.queue :
-				frontier_count += 1
-				frontier.put(n)
-
-
-def ucs(start_node):
 	frontier = []
-	explored = Queue()
-	heappush(frontier, (0, id(start_node), start_node))
-	frontier_count = 0 
+	explored = []
+	heappush(frontier, ((manhattanDistance(start_node.state)), id(start_node), start_node))
+	frontier_count = 1 
 	expanded_count = 0
 
 	while(frontier):
 		node = heappop(frontier)[2]
 		if node.is_goal():
 			return node, node.path_cost, frontier_count, expanded_count
-		explored.put(node)
+		explored.append(node)
 		node.generate_child_nodes()
 		expanded_count += 1
 		for n in node.children:
-			if not any(x[2].state == n.state for x in frontier) and not any(x.state == n.state for x in explored.queue):
+			if not any(x[2].state == n.state for x in frontier) and not any(x.state == n.state for x in explored):
+				heappush(frontier, (manhattanDistance(n.state) ,id(n), n))
+				frontier_count += 1
+
+def heuristicSearch(start_node):
+	frontier = []
+	explored = []
+	heappush(frontier, (0 + manhattanDistance(start_node.state), id(start_node), start_node))
+	frontier_count = 1 
+	expanded_count = 0
+
+	while(frontier):
+		node = heappop(frontier)[2]
+		if node.is_goal():
+			return node, node.path_cost, frontier_count, expanded_count
+		explored.append(node)
+		node.generate_child_nodes()
+		expanded_count += 1
+		for n in node.children:
+			if not any(x[2].state == n.state for x in frontier) and not any(x.state == n.state for x in explored):
+				heappush(frontier, (n.path_cost + manhattanDistance(n.state) ,id(n), n))
+				frontier_count += 1
+
+def ucs(start_node):
+	frontier = []
+	explored = []
+	heappush(frontier, (0, id(start_node), start_node))
+	frontier_count = 1 
+	expanded_count = 0
+
+	while(frontier):
+		node = heappop(frontier)[2]
+		if node.is_goal():
+			return node, node.path_cost, frontier_count, expanded_count
+		explored.append(node)
+		node.generate_child_nodes()
+		expanded_count += 1
+		for n in node.children:
+			if not any(x[2].state == n.state for x in frontier) and not any(x.state == n.state for x in explored):
 				heappush(frontier, (n.path_cost ,id(n), n))
 				frontier_count += 1
 
 def bfs(start_node):
 	frontier = Queue()
-	explored = Queue()
+	explored = []
 	frontier.put(start_node)
 	frontier_count = 1 
 	expanded_count = 0
 
 	while(not frontier.empty()):
 		node = frontier.get()
-		explored.put(node)
+		explored.append(node)
 		node.generate_child_nodes()
 		expanded_count += 1
 		for n in node.children:
-			if not any(x.state == n.state for x in frontier.queue) and not any(x.state == n.state for x in explored.queue):
+			if not any(x.state == n.state for x in frontier.queue) and not any(x.state == n.state for x in explored):
 				if n.is_goal():
 					return n, n.path_cost, frontier_count, expanded_count
 				else:
@@ -164,12 +186,11 @@ def process_args():
 		print_results(bfs, strategy_to_array(path))
 	elif strategy == 'ucost':
 		print_results(ucs, strategy_to_array(path))
-		'''
 	elif strategy == 'greedy':
-		gbf()
-	else:
-		heuristicSearch()
-	'''
+		print_results(gbf, strategy_to_array(path))
+	elif strategy =='astar':
+		print_results(heuristicSearch, strategy_to_array(path))
+
 
 
 def strategy_to_array(path):
