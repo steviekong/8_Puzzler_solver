@@ -6,13 +6,14 @@ from queue import *
 from heapq import *
 
 class node:
-	def __init__(self, state, parent, depth, path_cost, children, self_cost):
+	def __init__(self, state, parent, depth, path_cost, children, self_cost, actual_cost):
 		self.state = state
 		self.parent = parent
 		self.depth = depth
 		self.path_cost = path_cost
 		self.children = children
 		self.self_cost = self_cost
+		self.actual_cost =actual_cost
 
 	def find_zero(self):
 		for i, e in enumerate(self.state):
@@ -25,25 +26,25 @@ class node:
 			if(j-1 >= 0):
 				temp = copy.deepcopy(self.state)
 				temp[i][j-1], temp[i][j] = temp[i][j], temp[i][j-1]
-				child_list.append(node(temp, self, self.depth+1, self.path_cost+temp[i][j],None,temp[i][j])) 
+				child_list.append(node(temp, self, self.depth+1, self.path_cost+temp[i][j],None,temp[i][j],self.actual_cost+1)) 
 
 	def right_move_child(self, i, j, child_list):
 			if(j+1 <= 2):
 				temp = copy.deepcopy(self.state)
 				temp[i][j+1], temp[i][j] = temp[i][j], temp[i][j+1]
-				child_list.append(node(temp, self, self.depth+1, self.path_cost+temp[i][j],None,temp[i][j]))
+				child_list.append(node(temp, self, self.depth+1, self.path_cost+temp[i][j],None,temp[i][j],self.actual_cost+1))
 
 	def up_move_child(self, i, j, child_list):
 			if(i-1 >= 0):
 				temp = copy.deepcopy(self.state)
 				temp[i-1][j], temp[i][j] = temp[i][j], temp[i-1][j]
-				child_list.append(node(temp, self, self.depth+1, self.path_cost+temp[i][j],None,temp[i][j]))
+				child_list.append(node(temp, self, self.depth+1, self.path_cost+temp[i][j],None,temp[i][j],self.actual_cost+1))
 
 	def down_move_child(self, i, j, child_list):
 			if(i+1 <= 2):
 				temp = copy.deepcopy(self.state)
 				temp[i+1][j], temp[i][j] = temp[i][j], temp[i+1][j]
-				child_list.append(node(temp, self, self.depth+1, self.path_cost+temp[i][j],None,temp[i][j]))
+				child_list.append(node(temp, self, self.depth+1, self.path_cost+temp[i][j],None,temp[i][j],self.actual_cost+1))
 
 	def generate_child_nodes(self):
 		i, j = self.find_zero()
@@ -104,7 +105,7 @@ def heuristicSearch(start_node):
 		expanded_count += 1
 		for n in node.children:
 			if not any(x[2].state == n.state for x in frontier) and not any(x.state == n.state for x in explored):
-				heappush(frontier, (n.path_cost + manhattanDistance(n.state) ,id(n), n))
+				heappush(frontier, (n.actual_cost + manhattanDistance(n.state) ,id(n), n))
 				frontier_count += 1
 
 def ucs(start_node):
@@ -210,7 +211,7 @@ def strategy_to_array(path):
 					if j == 3:
 						j = 0
 						i += 1
-	return node(board, None, 0, 0, None, 0)
+	return node(board, None, 0, 0, None, 0, 0)
 
 
 process_args();
